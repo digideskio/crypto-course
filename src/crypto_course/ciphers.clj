@@ -64,7 +64,7 @@
 (deftype AffineCipher
   [a b]
   Cryptosystem
-   	(encrypt [this plain-text]
+    (encrypt [this plain-text]
       (mod (+ (* a plain-text) b) 26))
     (decrypt [this cipher-text]
       (mod (* ((alg/mult-inverse 26) a) (- cipher-text b)) 26)))
