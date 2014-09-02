@@ -21,6 +21,18 @@
 
 ;;;; Generators.
 
+(defn swap
+  "Returns vector v with index i1 and i2 swapped."
+  [v [i1 i2]]
+  (assoc v i2 (v i1) i1 (v i2)))
+
+(defn gen-shuffle
+  "Generates a shuffled vector. Swaps two indexes in the vector for each step."
+  [v]
+  (let [r (gen/choose 0 (dec (count v)))]
+    (gen/fmap (partial reduce swap v)
+      (gen/vector (gen/tuple r r)))))
+
 (def z26-gen
   "Generates a natural number in the inclusive range [0 25]."
   (gen/fmap #(mod % 26) gen/nat))
@@ -29,6 +41,11 @@
   "Generates a natural number in the inclusive range [0 25] which is co-prime
   to 26."
   (gen/such-that #(= 1 (alg/gcd % 26)) z26-gen))
+
+(def z26-perm-gen
+  "Generates a random permutation of the inclusive range [0 25]."
+  (gen-shuffle
+    (vec (range 26))))
 
 ;;;; Properties.
 
@@ -45,6 +62,20 @@
                   (= plain-text decryp))))
 
 (expect (->SimpleCheck) (tc/quick-check 100 prop-shift-cipher))
+
+;;; Substitution Cipher
+
+(def prop-substitution-cipher
+  "States for any fixed key and plain-text, it should be the case that the
+  decryption of the encryption equals the plain-text."
+  (prop/for-all [perm z26-perm-gen
+                 plain-text z26-gen]
+                (let [cipher (ciphers/substitution-cipher perm)
+                      encryp (ciphers/encrypt cipher plain-text)
+                      decryp (ciphers/decrypt cipher encryp)]
+                  (= plain-text decryp))))
+
+(expect (->SimpleCheck) (tc/quick-check 100 prop-substitution-cipher))
 
 ;;; Affine Cipher
 
