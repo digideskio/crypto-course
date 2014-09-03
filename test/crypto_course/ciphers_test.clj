@@ -35,12 +35,12 @@
 
 (def z26-gen
   "Generates a natural number in the inclusive range [0 25]."
-  (gen/fmap #(mod % 26) gen/nat))
+  (gen/elements (range 26)))
 
 (def z26-star-gen
   "Generates a natural number in the inclusive range [0 25] which is co-prime
   to 26."
-  (gen/such-that #(= 1 (alg/gcd % 26)) z26-gen))
+  (gen/elements (filter #(= 1 (alg/gcd % 26)) (range 26))))
 
 (def z26-perm-gen
   "Generates a random permutation of the inclusive range [0 25]."
