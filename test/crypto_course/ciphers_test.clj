@@ -47,6 +47,10 @@
   (gen-shuffle
     (vec (range 26))))
 
+(def z26-seq-gen
+  "Generates a sequence of Z26 integers."
+  (gen/vector z26-gen))
+
 ;;;; Properties.
 
 ;;; Shift Cipher
@@ -91,3 +95,18 @@
                   (= plain-text decryp))))
 
 (expect (->SimpleCheck) (tc/quick-check 100 prop-affine-cipher))
+
+;;; Vigenére Cipher
+
+(def prop-vigenere-cipher
+  "States for any fixed key and plain-text, it should be the case that the
+  decryption of the encryption equals the plain-text."
+  (prop/for-all [key-seq z26-seq-gen
+                 plain-text z26-seq-gen]
+                (let [cipher (ciphers/vigenere-cipher key-seq)
+                      encryp (ciphers/encrypt cipher plain-text)
+                      length (apply min (map count [key-seq plain-text]))
+                      decryp (take length (ciphers/decrypt cipher encryp))]
+                  (= (take length plain-text) (take length decryp)))))
+
+(expect (->SimpleCheck) (tc/quick-check 100 prop-vigenere-cipher))

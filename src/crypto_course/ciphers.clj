@@ -79,3 +79,26 @@
   {:pre [(= 1 (alg/gcd a 26))
          (<= 0 a 25)]}
   (AffineCipher. a b))
+
+;;;; Cryptosystem 1.4: Vigenére Cipher
+
+(deftype VigenereCipher
+  [k]
+  Cryptosystem
+    (encrypt [this plain-text]
+      (map #(mod (+ %1 %2) 26) plain-text k))
+    (decrypt [this cipher-text]
+      (map #(mod (- %1 %2) 26) cipher-text k)))
+
+(defn vigenere-cipher
+  "Returns a Vigénere Cipher which encrypts the i'th plain-text under the i'th
+  key much like the Shift Cipher:
+  
+  e(x_i) = (x_i + k_(i mod 26))
+  
+  The key is a sequence of elements in Z26 and will repeat itself if the
+  plain-text is longer than the key."
+  [k]
+  {:pre [(sequential? k)
+         (every? #(<= 0 % 25) k)]}
+  (VigenereCipher. (cycle k)))
